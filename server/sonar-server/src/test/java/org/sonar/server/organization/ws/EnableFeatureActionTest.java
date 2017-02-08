@@ -31,7 +31,6 @@ import org.sonar.server.exceptions.ForbiddenException;
 import org.sonar.server.exceptions.UnauthorizedException;
 import org.sonar.server.organization.DefaultOrganizationProvider;
 import org.sonar.server.organization.TestDefaultOrganizationProvider;
-import org.sonar.server.property.InternalProperties;
 import org.sonar.server.tester.UserSessionRule;
 import org.sonar.server.ws.TestResponse;
 import org.sonar.server.ws.WsActionTester;
@@ -56,13 +55,17 @@ public class EnableFeatureActionTest {
   @Test
   public void enabling_feature_saves_internal_property_and_flags_caller_as_root() {
     UserDto user = db.users().insertUser();
+    UserDto otherUser = db.users().insertUser();
+    db.properties().verifyInternal("organization.enabled", null);
     db.rootFlag().verify(user.getLogin(), false);
+    db.rootFlag().verify(otherUser.getLogin(), false);
     logInAsSystemAdministrator(user.getLogin());
 
     call();
 
-    assertThat(db.getDbClient().internalPropertiesDao().selectByKey(db.getSession(), InternalProperties.ORGANIZATION_ENABLED)).hasValue("true");
+    db.properties().verifyInternal("organization.enabled", "true");
     db.rootFlag().verify(user.getLogin(), true);
+    db.rootFlag().verify(otherUser.getLogin(), false);
   }
 
   @Test

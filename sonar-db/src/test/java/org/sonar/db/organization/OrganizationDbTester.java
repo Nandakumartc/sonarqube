@@ -33,6 +33,11 @@ public class OrganizationDbTester {
     this.dbTester = dbTester;
   }
 
+  public OrganizationDbTester enable() {
+    dbTester.properties().insertInternal("organization.enabled", "true");
+    return this;
+  }
+
   /**
    * Insert an {@link OrganizationDto} and commit the session
    */
