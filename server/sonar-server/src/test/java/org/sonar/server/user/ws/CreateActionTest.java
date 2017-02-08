@@ -110,6 +110,7 @@ public class CreateActionTest {
     // exists in db
     Optional<UserDto> dbUser = db.users().selectUserByLogin("john");
     assertThat(dbUser).isPresent();
+    assertThat(dbUser.get().isRoot()).isFalse();
 
     // member of default group in default organization
     assertThat(db.users().selectGroupIdsOfUser(dbUser.get())).containsOnly(defaultGroupInDefaultOrg.getId());
@@ -127,8 +128,8 @@ public class CreateActionTest {
       .build());
 
     assertThat(db.users().selectUserByLogin("john").get())
-      .extracting(UserDto::isLocal, UserDto::getExternalIdentityProvider, UserDto::getExternalIdentity)
-      .containsOnly(true, "sonarqube", "john");
+      .extracting(UserDto::isLocal, UserDto::getExternalIdentityProvider, UserDto::getExternalIdentity, UserDto::isRoot)
+      .containsOnly(true, "sonarqube", "john", false);
   }
 
   @Test
@@ -142,8 +143,8 @@ public class CreateActionTest {
       .build());
 
     assertThat(db.users().selectUserByLogin("john").get())
-      .extracting(UserDto::isLocal, UserDto::getExternalIdentityProvider, UserDto::getExternalIdentity)
-      .containsOnly(false, "sonarqube", "john");
+      .extracting(UserDto::isLocal, UserDto::getExternalIdentityProvider, UserDto::getExternalIdentity, UserDto::isRoot)
+      .containsOnly(false, "sonarqube", "john", false);
   }
 
   @Test
@@ -210,27 +211,6 @@ public class CreateActionTest {
   }
 
   @Test
-  public void create_user_with_root_flag_to_false_if_default_group_is_unset() throws Exception {
-    unsetDefaultGroupProperty();
-    logInAsRoot();
-
-    executeRequest("john");
-
-    db.rootFlag().verify("john", false);
-  }
-
-  @Test
-  public void create_user_with_root_flag_to_false_if_default_group_is_non_admin_on_default_organization() throws Exception {
-    GroupDto adminGroup = db.users().insertGroup(db.getDefaultOrganization());
-    setDefaultGroupProperty(adminGroup);
-    logInAsRoot();
-
-    executeRequest("foo");
-
-    db.rootFlag().verify("foo", false);
-  }
-
-  @Test
   public void request_fails_with_ServerException_when_default_group_belongs_to_another_organization() throws Exception {
     OrganizationDto otherOrganization = db.organizations().insert();
     GroupDto group = db.users().insertGroup(otherOrganization);
@@ -242,17 +222,6 @@ public class CreateActionTest {
       "Please update the general security settings to fix this issue");
 
     executeRequest("bar");
-  }
-
-  @Test
-  public void create_user_with_root_flag_to_true_if_default_group_is_admin_on_default_organization() throws Exception {
-    GroupDto adminGroup = db.users().insertAdminGroup(db.getDefaultOrganization());
-    setDefaultGroupProperty(adminGroup);
-    logInAsRoot();
-
-    executeRequest("doh");
-
-    db.rootFlag().verify("doh", true);
   }
 
   @Test
@@ -317,10 +286,6 @@ public class CreateActionTest {
 
     expectedException.expect(ForbiddenException.class);
     executeRequest("john");
-  }
-
-  private void unsetDefaultGroupProperty() {
-    settings.setProperty("sonar.defaultGroup", (String) null);
   }
 
   private void setDefaultGroupProperty(GroupDto adminGroup) {

@@ -81,7 +81,6 @@ public class DeleteAction implements UserGroupsWsAction {
       checkNotTryingToDeleteLastAdminGroup(dbSession, groupId);
       removeGroupPermissions(dbSession, groupId);
       removeFromPermissionTemplates(dbSession, groupId);
-      updateRootFlagOfMembers(dbSession, groupId);
       removeGroupMembers(dbSession, groupId);
       dbClient.groupDao().deleteById(dbSession, groupId.getId());
 
@@ -118,10 +117,6 @@ public class DeleteAction implements UserGroupsWsAction {
 
   private void removeFromPermissionTemplates(DbSession dbSession, GroupId groupId) {
     dbClient.permissionTemplateDao().deleteByGroup(dbSession, groupId.getId());
-  }
-
-  private void updateRootFlagOfMembers(DbSession dbSession, GroupId groupId) {
-    dbClient.groupDao().updateRootFlagOfUsersInGroupFromPermissions(dbSession, groupId.getId(), defaultOrganizationProvider.get().getUuid());
   }
 
   private void removeGroupMembers(DbSession dbSession, GroupId groupId) {
