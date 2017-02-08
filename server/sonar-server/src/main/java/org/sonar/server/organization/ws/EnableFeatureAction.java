@@ -26,10 +26,9 @@ import org.sonar.db.DbClient;
 import org.sonar.db.DbSession;
 import org.sonar.server.exceptions.BadRequestException;
 import org.sonar.server.organization.DefaultOrganizationProvider;
-import org.sonar.server.property.InternalProperties;
+import org.sonar.server.organization.OrganizationFeature;
 import org.sonar.server.user.UserSession;
 
-import static java.lang.String.valueOf;
 import static java.util.Objects.requireNonNull;
 import static org.sonar.core.permission.GlobalPermissions.SYSTEM_ADMIN;
 
@@ -39,13 +38,14 @@ public class EnableFeatureAction implements OrganizationsAction {
   private final UserSession userSession;
   private final DbClient dbClient;
   private final DefaultOrganizationProvider defaultOrganizationProvider;
-  private final OrganizationsWsSupport support;
+  private final OrganizationFeature organizationFeature;
 
-  public EnableFeatureAction(UserSession userSession, DbClient dbClient, DefaultOrganizationProvider defaultOrganizationProvider, OrganizationsWsSupport support) {
+  public EnableFeatureAction(UserSession userSession, DbClient dbClient, DefaultOrganizationProvider defaultOrganizationProvider,
+    OrganizationFeature organizationFeature) {
     this.userSession = userSession;
     this.dbClient = dbClient;
     this.defaultOrganizationProvider = defaultOrganizationProvider;
-    this.support = support;
+    this.organizationFeature = organizationFeature;
   }
 
   @Override
@@ -62,9 +62,8 @@ public class EnableFeatureAction implements OrganizationsAction {
 
   @Override
   public void handle(Request request, Response response) throws Exception {
-    verifySystemAdministrator();
-
     try (DbSession dbSession = dbClient.openSession(false)) {
+      verifySystemAdministrator();
       verifyFeatureIsDisabled(dbSession);
       flagCurrentUserAsRoot(dbSession);
       enableFeature(dbSession);
@@ -78,7 +77,7 @@ public class EnableFeatureAction implements OrganizationsAction {
   }
 
   private void verifyFeatureIsDisabled(DbSession dbSession) {
-    if (support.isFeatureEnabled(dbSession)) {
+    if (organizationFeature.isEnabled(dbSession)) {
       throw new BadRequestException("Organizations are already enabled");
     }
   }
@@ -88,7 +87,7 @@ public class EnableFeatureAction implements OrganizationsAction {
   }
 
   private void enableFeature(DbSession dbSession) {
-    dbClient.internalPropertiesDao().save(dbSession, InternalProperties.ORGANIZATION_ENABLED, valueOf(true));
+    organizationFeature.enable(dbSession);
   }
 
 }

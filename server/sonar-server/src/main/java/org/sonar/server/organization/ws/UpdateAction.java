@@ -29,6 +29,7 @@ import org.sonar.db.DbClient;
 import org.sonar.db.DbSession;
 import org.sonar.db.organization.OrganizationDto;
 import org.sonar.server.exceptions.NotFoundException;
+import org.sonar.server.organization.OrganizationFeature;
 import org.sonar.server.user.UserSession;
 import org.sonarqube.ws.Organizations;
 
@@ -47,11 +48,14 @@ public class UpdateAction implements OrganizationsAction {
   private final UserSession userSession;
   private final OrganizationsWsSupport wsSupport;
   private final DbClient dbClient;
+  private final OrganizationFeature organizationFeature;
 
-  public UpdateAction(UserSession userSession, OrganizationsWsSupport wsSupport, DbClient dbClient) {
+  public UpdateAction(UserSession userSession, OrganizationsWsSupport wsSupport, DbClient dbClient,
+    OrganizationFeature organizationFeature) {
     this.userSession = userSession;
     this.wsSupport = wsSupport;
     this.dbClient = dbClient;
+    this.organizationFeature = organizationFeature;
   }
 
   @Override
@@ -77,7 +81,7 @@ public class UpdateAction implements OrganizationsAction {
     userSession.checkLoggedIn();
 
     try (DbSession dbSession = dbClient.openSession(false)) {
-      wsSupport.checkFeatureEnabled(dbSession);
+      organizationFeature.checkEnabled(dbSession);
 
       String key = request.mandatoryParam(PARAM_KEY);
 

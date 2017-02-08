@@ -39,6 +39,7 @@ import org.sonar.db.permission.GroupPermissionDto;
 import org.sonar.db.permission.template.PermissionTemplateDto;
 import org.sonar.db.user.GroupDto;
 import org.sonar.db.user.UserGroupDto;
+import org.sonar.server.organization.OrganizationFeature;
 import org.sonar.server.user.UserSession;
 import org.sonarqube.ws.Organizations.CreateWsResponse;
 
@@ -66,15 +67,17 @@ public class CreateAction implements OrganizationsAction {
   private final UuidFactory uuidFactory;
   private final OrganizationsWsSupport wsSupport;
   private final System2 system2;
+  private final OrganizationFeature organizationFeature;
 
   public CreateAction(Settings settings, UserSession userSession, DbClient dbClient, UuidFactory uuidFactory,
-    OrganizationsWsSupport wsSupport, System2 system2) {
+    OrganizationsWsSupport wsSupport, System2 system2, OrganizationFeature organizationFeature) {
     this.settings = settings;
     this.userSession = userSession;
     this.dbClient = dbClient;
     this.uuidFactory = uuidFactory;
     this.wsSupport = wsSupport;
     this.system2 = system2;
+    this.organizationFeature = organizationFeature;
   }
 
   @Override
@@ -108,7 +111,7 @@ public class CreateAction implements OrganizationsAction {
     }
 
     try (DbSession dbSession = dbClient.openSession(false)) {
-      wsSupport.checkFeatureEnabled(dbSession);
+      organizationFeature.checkEnabled(dbSession);
 
       String name = wsSupport.getAndCheckMandatoryName(request);
       String requestKey = getAndCheckKey(request);

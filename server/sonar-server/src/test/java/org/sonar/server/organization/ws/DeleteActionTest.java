@@ -36,11 +36,11 @@ import org.sonar.db.permission.template.PermissionTemplateDto;
 import org.sonar.db.user.GroupDto;
 import org.sonar.db.user.UserDto;
 import org.sonar.server.component.ComponentCleanerService;
-import org.sonar.server.exceptions.BadRequestException;
 import org.sonar.server.exceptions.ForbiddenException;
 import org.sonar.server.exceptions.NotFoundException;
 import org.sonar.server.exceptions.UnauthorizedException;
 import org.sonar.server.organization.TestDefaultOrganizationProvider;
+import org.sonar.server.organization.TestOrganizationFeature;
 import org.sonar.server.tester.UserSessionRule;
 import org.sonar.server.ws.WsActionTester;
 
@@ -64,8 +64,9 @@ public class DeleteActionTest {
   private DbClient dbClient = dbTester.getDbClient();
   private DbSession session = dbTester.getSession();
   private ComponentCleanerService componentCleanerService = mock(ComponentCleanerService.class);
-  private OrganizationsWsSupport support = new OrganizationsWsSupport(dbClient);
-  private DeleteAction underTest = new DeleteAction(userSession, dbTester.getDbClient(), TestDefaultOrganizationProvider.from(dbTester), componentCleanerService, support);
+  private TestOrganizationFeature organizationFeature = TestOrganizationFeature.standalone().setEnabled(true);
+  private final TestDefaultOrganizationProvider defaultOrganizationProvider = TestDefaultOrganizationProvider.from(dbTester);
+  private DeleteAction underTest = new DeleteAction(userSession, dbTester.getDbClient(), defaultOrganizationProvider, componentCleanerService, organizationFeature);
   private WsActionTester wsTester = new WsActionTester(underTest);
 
   @Test
@@ -88,19 +89,18 @@ public class DeleteActionTest {
   }
 
   @Test
-  public void request_fails_with_organization_feature_is_disabled() {
+  public void request_fails_with_IllegalStateException_if_organization_feature_is_disabled() {
+    organizationFeature.setEnabled(false);
     userSession.logIn();
 
-    expectedException.expect(BadRequestException.class);
-    expectedException.expectMessage("");
+    expectedException.expect(IllegalStateException.class);
+    expectedException.expectMessage("Organization feature is disabled");
 
     wsTester.newRequest().execute();
   }
 
   @Test
   public void request_fails_with_UnauthorizedException_if_user_is_not_logged_in() {
-    enableOrganizations();
-
     expectedException.expect(UnauthorizedException.class);
     expectedException.expectMessage("Authentication is required");
 
@@ -110,7 +110,7 @@ public class DeleteActionTest {
 
   @Test
   public void request_fails_with_IAE_if_key_param_is_missing() {
-    enableOrganizationsAndLogInAsRoot();
+    logInAsRoot();
 
     expectedException.expect(IllegalArgumentException.class);
     expectedException.expectMessage("The 'key' parameter is missing");
@@ -120,7 +120,7 @@ public class DeleteActionTest {
 
   @Test
   public void request_fails_with_IAE_if_key_is_the_one_of_default_organization() {
-    enableOrganizationsAndLogInAsRoot();
+    logInAsRoot();
 
     expectedException.expect(IllegalArgumentException.class);
     expectedException.expectMessage("Default Organization can't be deleted");
@@ -130,7 +130,7 @@ public class DeleteActionTest {
 
   @Test
   public void request_fails_with_NotFoundException_if_organization_with_specified_key_does_not_exist() {
-    enableOrganizationsAndLogInAsRoot();
+    logInAsRoot();
 
     expectedException.expect(NotFoundException.class);
     expectedException.expectMessage("Organization with key 'foo' not found");
@@ -140,7 +140,6 @@ public class DeleteActionTest {
 
   @Test
   public void request_fails_with_ForbiddenException_when_user_is_not_root_and_is_not_administrator_of_specified_organization() {
-    enableOrganizations();
     OrganizationDto organization = dbTester.organizations().insert();
     userSession.logIn();
 
@@ -152,7 +151,6 @@ public class DeleteActionTest {
 
   @Test
   public void request_fails_with_ForbiddenException_when_user_is_not_root_and_is_administrator_of_other_organization() {
-    enableOrganizations();
     OrganizationDto organization = dbTester.organizations().insert();
     logInAsAdministrator(dbTester.getDefaultOrganization());
 
@@ -164,7 +162,6 @@ public class DeleteActionTest {
 
   @Test
   public void request_deletes_specified_organization_if_exists_and_user_is_administrator_of_it() {
-    enableOrganizations();
     OrganizationDto organization = dbTester.organizations().insert();
     logInAsAdministrator(organization);
 
@@ -175,7 +172,6 @@ public class DeleteActionTest {
 
   @Test
   public void request_deletes_specified_organization_if_exists_and_user_is_root() {
-    enableOrganizations();
     OrganizationDto organization = dbTester.organizations().insert();
     userSession.logIn().setRoot();
 
@@ -186,7 +182,7 @@ public class DeleteActionTest {
 
   @Test
   public void request_also_deletes_components_of_specified_organization() {
-    enableOrganizationsAndLogInAsRoot();
+    logInAsRoot();
 
     OrganizationDto organization = dbTester.organizations().insert();
     ComponentDto project = dbTester.components().insertProject(organization);
@@ -209,7 +205,7 @@ public class DeleteActionTest {
 
   @Test
   public void request_also_deletes_permissions_templates_and_permissions_and_groups_of_specified_organization() {
-    enableOrganizationsAndLogInAsRoot();
+    logInAsRoot();
 
     OrganizationDto org = dbTester.organizations().insert();
     OrganizationDto otherOrg = dbTester.organizations().insert();
@@ -275,20 +271,11 @@ public class DeleteActionTest {
       .execute();
   }
 
-  private void enableOrganizations() {
-    dbTester.organizations().enable();
-  }
-
   private void logInAsRoot() {
     userSession.logIn().setRoot();
   }
 
   private void logInAsAdministrator(OrganizationDto organization) {
     userSession.logIn().addOrganizationPermission(organization.getUuid(), SYSTEM_ADMIN);
-  }
-
-  private void enableOrganizationsAndLogInAsRoot() {
-    enableOrganizations();
-    logInAsRoot();
   }
 }

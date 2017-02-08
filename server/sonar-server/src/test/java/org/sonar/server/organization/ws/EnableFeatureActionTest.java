@@ -30,6 +30,8 @@ import org.sonar.server.exceptions.BadRequestException;
 import org.sonar.server.exceptions.ForbiddenException;
 import org.sonar.server.exceptions.UnauthorizedException;
 import org.sonar.server.organization.DefaultOrganizationProvider;
+import org.sonar.server.organization.OrganizationFeature;
+import org.sonar.server.organization.OrganizationFeatureImpl;
 import org.sonar.server.organization.TestDefaultOrganizationProvider;
 import org.sonar.server.tester.UserSessionRule;
 import org.sonar.server.ws.TestResponse;
@@ -48,24 +50,24 @@ public class EnableFeatureActionTest {
   public DbTester db = DbTester.create();
 
   private DefaultOrganizationProvider defaultOrganizationProvider = TestDefaultOrganizationProvider.from(db);
-  private OrganizationsWsSupport support = new OrganizationsWsSupport(db.getDbClient());
-  private EnableFeatureAction underTest = new EnableFeatureAction(userSession, db.getDbClient(), defaultOrganizationProvider, support);
+  private OrganizationFeature organizationFeature = new OrganizationFeatureImpl(db.getDbClient());
+  private EnableFeatureAction underTest = new EnableFeatureAction(userSession, db.getDbClient(), defaultOrganizationProvider, organizationFeature);
   private WsActionTester tester = new WsActionTester(underTest);
 
   @Test
   public void enabling_feature_saves_internal_property_and_flags_caller_as_root() {
     UserDto user = db.users().insertUser();
     UserDto otherUser = db.users().insertUser();
-    db.properties().verifyInternal("organization.enabled", null);
-    db.rootFlag().verify(user.getLogin(), false);
-    db.rootFlag().verify(otherUser.getLogin(), false);
+    verifyFeatureEnabled(false);
+    verifyRoot(user, false);
+    verifyRoot(otherUser, false);
     logInAsSystemAdministrator(user.getLogin());
 
     call();
 
-    db.properties().verifyInternal("organization.enabled", "true");
-    db.rootFlag().verify(user.getLogin(), true);
-    db.rootFlag().verify(otherUser.getLogin(), false);
+    verifyFeatureEnabled(true);
+    verifyRoot(user, true);
+    verifyRoot(otherUser, false);
   }
 
   @Test
@@ -116,5 +118,13 @@ public class EnableFeatureActionTest {
   private void call() {
     TestResponse response = tester.newRequest().setMethod("POST").execute();
     assertThat(response.getStatus()).isEqualTo(HttpURLConnection.HTTP_NO_CONTENT);
+  }
+
+  private void verifyFeatureEnabled(boolean enabled) {
+    assertThat(organizationFeature.isEnabled(db.getSession())).isEqualTo(enabled);
+  }
+
+  private void verifyRoot(UserDto user, boolean root) {
+    db.rootFlag().verify(user.getLogin(), root);
   }
 }

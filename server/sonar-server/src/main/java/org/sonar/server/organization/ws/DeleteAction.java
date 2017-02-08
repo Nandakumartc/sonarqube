@@ -30,6 +30,7 @@ import org.sonar.db.organization.OrganizationDto;
 import org.sonar.server.component.ComponentCleanerService;
 import org.sonar.server.organization.DefaultOrganization;
 import org.sonar.server.organization.DefaultOrganizationProvider;
+import org.sonar.server.organization.OrganizationFeature;
 import org.sonar.server.user.UserSession;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -44,15 +45,15 @@ public class DeleteAction implements OrganizationsAction {
   private final DbClient dbClient;
   private final DefaultOrganizationProvider defaultOrganizationProvider;
   private final ComponentCleanerService componentCleanerService;
-  private final OrganizationsWsSupport support;
+  private final OrganizationFeature organizationFeature;
 
   public DeleteAction(UserSession userSession, DbClient dbClient, DefaultOrganizationProvider defaultOrganizationProvider,
-    ComponentCleanerService componentCleanerService, OrganizationsWsSupport support) {
+    ComponentCleanerService componentCleanerService, OrganizationFeature organizationFeature) {
     this.userSession = userSession;
     this.dbClient = dbClient;
     this.defaultOrganizationProvider = defaultOrganizationProvider;
     this.componentCleanerService = componentCleanerService;
-    this.support = support;
+    this.organizationFeature = organizationFeature;
   }
 
   @Override
@@ -76,7 +77,7 @@ public class DeleteAction implements OrganizationsAction {
     userSession.checkLoggedIn();
 
     try (DbSession dbSession = dbClient.openSession(false)) {
-      support.checkFeatureEnabled(dbSession);
+      organizationFeature.checkEnabled(dbSession);
 
       String key = request.mandatoryParam(PARAM_KEY);
       preventDeletionOfDefaultOrganization(key, defaultOrganizationProvider.get());
