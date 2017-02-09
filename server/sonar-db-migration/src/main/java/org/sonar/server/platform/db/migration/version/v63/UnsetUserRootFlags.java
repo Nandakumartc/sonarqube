@@ -19,29 +19,33 @@
  */
 package org.sonar.server.platform.db.migration.version.v63;
 
-import org.junit.Test;
+import java.sql.SQLException;
+import org.sonar.api.utils.System2;
+import org.sonar.db.Database;
+import org.sonar.server.platform.db.migration.step.DataChange;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.sonar.server.platform.db.migration.version.DbVersionTestUtils.verifyMigrationCount;
-import static org.sonar.server.platform.db.migration.version.DbVersionTestUtils.verifyMinimumMigrationNumber;
+/**
+ * Organizations and root users were not production-ready
+ * in versions prior to 6.3. For this reason they should not
+ * be enabled. This migration unsets the root flag from
+ * users.
+ */
+public class UnsetUserRootFlags extends DataChange {
 
-public class DbVersion63Test {
-  private DbVersion63 underTest = new DbVersion63();
+  private final System2 system2;
 
-  @Test
-  public void verify_support_components() {
-    assertThat(underTest.getSupportComponents())
-      .containsOnly(DefaultOrganizationUuidImpl.class);
+  public UnsetUserRootFlags(Database db, System2 system2) {
+    super(db);
+    this.system2 = system2;
   }
 
-  @Test
-  public void migrationNumber_starts_at_1500() {
-    verifyMinimumMigrationNumber(underTest, 1500);
+  @Override
+  protected void execute(Context context) throws SQLException {
+    context.prepareUpsert("update users set is_root=?, updated_at=? where is_root=?")
+      .setBoolean(1, false)
+      .setLong(2, system2.now())
+      .setBoolean(3, true)
+      .execute()
+      .commit();
   }
-
-  @Test
-  public void verify_migration_count() {
-    verifyMigrationCount(underTest, 11);
-  }
-
 }

@@ -41,6 +41,7 @@ public class DbVersion63 implements DbVersion {
       .add(1506, "Add index on PROJECTS.ORGANIZATION_UUID", AddIndexOnOrganizationUuidOfProjects.class)
       .add(1507, "Drop table RESOURCE_INDEX", DropTableResourceIndex.class)
       .add(1508, "Add columns ORGANIZATIONS.DEFAULT_PERM_TEMPLATE_*", AddDefaultPermTemplateColumnsToOrganizations.class)
-      .add(1509, "Populate columns ORGANIZATIONS.DEFAULT_PERM_TEMPLATE_*", PopulateDefaultPermTemplateColumnsOfOrganizations.class);
+      .add(1509, "Populate columns ORGANIZATIONS.DEFAULT_PERM_TEMPLATE_*", PopulateDefaultPermTemplateColumnsOfOrganizations.class)
+      .add(1517, "Unset user root flags", UnsetUserRootFlags.class);
   }
 }
