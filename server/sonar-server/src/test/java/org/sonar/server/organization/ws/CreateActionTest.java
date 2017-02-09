@@ -125,7 +125,7 @@ public class CreateActionTest {
 
   @Test
   public void verify_response_example() throws URISyntaxException, IOException {
-    logInAsRoot();
+    logInAsSystemAdministrator();
     mockForSuccessfulInsert(Uuids.UUID_EXAMPLE_01, SOME_DATE);
 
     String response = executeJsonRequest("Foo Company", "foo-company", "The Foo company produces quality software for Bar.", "https://www.foo.com", "https://www.foo.com/foo.png");
@@ -155,7 +155,7 @@ public class CreateActionTest {
   }
 
   @Test
-  public void request_fails_if_user_is_not_root_and_logged_in_users_cannot_create_organizations() {
+  public void request_fails_if_user_is_not_system_administrator_and_logged_in_users_cannot_create_organizations() {
     userSession.logIn();
 
     expectedException.expect(ForbiddenException.class);
@@ -165,16 +165,16 @@ public class CreateActionTest {
   }
 
   @Test
-  public void request_succeeds_if_user_is_root_and_logged_in_users_cannot_create_organizations() {
-    logInAsRoot();
+  public void request_succeeds_if_user_is_system_administrator_and_logged_in_users_cannot_create_organizations() {
+    logInAsSystemAdministrator();
     mockForSuccessfulInsert(SOME_UUID, SOME_DATE);
 
     verifyResponseAndDb(executeRequest("foo"), SOME_UUID, "foo", "foo", SOME_DATE);
   }
 
   @Test
-  public void request_succeeds_if_user_is_root_and_logged_in_users_can_create_organizations() {
-    logInAsRoot();
+  public void request_succeeds_if_user_is_system_administrator_and_logged_in_users_can_create_organizations() {
+    logInAsSystemAdministrator();
     settings.setProperty(ORGANIZATIONS_ANYONE_CAN_CREATE, true);
     mockForSuccessfulInsert(SOME_UUID, SOME_DATE);
 
@@ -182,7 +182,7 @@ public class CreateActionTest {
   }
 
   @Test
-  public void request_succeeds_if_user_is_not_root_and_logged_in_users_can_create_organizations() {
+  public void request_succeeds_if_user_is_not_system_administrator_and_logged_in_users_can_create_organizations() {
     userSession.logIn();
     settings.setProperty(ORGANIZATIONS_ANYONE_CAN_CREATE, true);
     mockForSuccessfulInsert(SOME_UUID, SOME_DATE);
@@ -192,7 +192,7 @@ public class CreateActionTest {
 
   @Test
   public void request_fails_if_name_param_is_missing() {
-    logInAsRoot();
+    logInAsSystemAdministrator();
 
     expectedException.expect(IllegalArgumentException.class);
     expectedException.expectMessage("The 'name' parameter is missing");
@@ -202,7 +202,7 @@ public class CreateActionTest {
 
   @Test
   public void request_fails_if_name_is_one_char_long() {
-    logInAsRoot();
+    logInAsSystemAdministrator();
 
     expectedException.expect(IllegalArgumentException.class);
     expectedException.expectMessage("Name 'a' must be at least 2 chars long");
@@ -212,7 +212,7 @@ public class CreateActionTest {
 
   @Test
   public void request_succeeds_if_name_is_two_chars_long() {
-    logInAsRoot();
+    logInAsSystemAdministrator();
     mockForSuccessfulInsert(SOME_UUID, SOME_DATE);
 
     verifyResponseAndDb(executeRequest("ab"), SOME_UUID, "ab", "ab", SOME_DATE);
@@ -220,7 +220,7 @@ public class CreateActionTest {
 
   @Test
   public void request_fails_if_name_is_65_chars_long() {
-    logInAsRoot();
+    logInAsSystemAdministrator();
 
     expectedException.expect(IllegalArgumentException.class);
     expectedException.expectMessage("Name '" + STRING_65_CHARS_LONG + "' must be at most 64 chars long");
@@ -230,7 +230,7 @@ public class CreateActionTest {
 
   @Test
   public void request_succeeds_if_name_is_64_char_long() {
-    logInAsRoot();
+    logInAsSystemAdministrator();
     mockForSuccessfulInsert(SOME_UUID, SOME_DATE);
 
     String name = STRING_65_CHARS_LONG.substring(0, 64);
@@ -240,7 +240,7 @@ public class CreateActionTest {
 
   @Test
   public void request_fails_if_key_one_char_long() {
-    logInAsRoot();
+    logInAsSystemAdministrator();
 
     expectedException.expect(IllegalArgumentException.class);
     expectedException.expectMessage("Key 'a' must be at least 2 chars long");
@@ -250,7 +250,7 @@ public class CreateActionTest {
 
   @Test
   public void request_fails_if_key_is_33_chars_long() {
-    logInAsRoot();
+    logInAsSystemAdministrator();
 
     String key = STRING_65_CHARS_LONG.substring(0, 33);
 
@@ -262,7 +262,7 @@ public class CreateActionTest {
 
   @Test
   public void request_succeeds_if_key_is_2_chars_long() {
-    logInAsRoot();
+    logInAsSystemAdministrator();
     mockForSuccessfulInsert(SOME_UUID, SOME_DATE);
 
     verifyResponseAndDb(executeRequest("foo", "ab"), SOME_UUID, "foo", "ab", SOME_DATE);
@@ -270,7 +270,7 @@ public class CreateActionTest {
 
   @Test
   public void requests_succeeds_if_key_is_32_chars_long() {
-    logInAsRoot();
+    logInAsSystemAdministrator();
     mockForSuccessfulInsert(SOME_UUID, SOME_DATE);
 
     String key = STRING_65_CHARS_LONG.substring(0, 32);
@@ -280,28 +280,28 @@ public class CreateActionTest {
 
   @Test
   public void requests_fails_if_key_contains_non_ascii_chars_but_dash() {
-    logInAsRoot();
+    logInAsSystemAdministrator();
 
     requestFailsWithInvalidCharInKey("ab@");
   }
 
   @Test
   public void request_fails_if_key_starts_with_a_dash() {
-    logInAsRoot();
+    logInAsSystemAdministrator();
 
     requestFailsWithInvalidCharInKey("-ab");
   }
 
   @Test
   public void request_fails_if_key_ends_with_a_dash() {
-    logInAsRoot();
+    logInAsSystemAdministrator();
 
     requestFailsWithInvalidCharInKey("ab-");
   }
 
   @Test
   public void request_fails_if_key_contains_space() {
-    logInAsRoot();
+    logInAsSystemAdministrator();
 
     requestFailsWithInvalidCharInKey("a b");
   }
@@ -315,7 +315,7 @@ public class CreateActionTest {
 
   @Test
   public void request_fails_if_key_is_specified_and_already_exists_in_DB() {
-    logInAsRoot();
+    logInAsSystemAdministrator();
     OrganizationDto org = insertOrganization("the-key");
 
     expectedException.expect(IllegalArgumentException.class);
@@ -326,7 +326,7 @@ public class CreateActionTest {
 
   @Test
   public void request_fails_if_key_computed_from_name_already_exists_in_DB() {
-    logInAsRoot();
+    logInAsSystemAdministrator();
     String key = STRING_65_CHARS_LONG.substring(0, 32);
     insertOrganization(key);
 
@@ -340,7 +340,7 @@ public class CreateActionTest {
 
   @Test
   public void request_succeeds_if_description_url_and_avatar_are_not_specified() {
-    logInAsRoot();
+    logInAsSystemAdministrator();
     mockForSuccessfulInsert(SOME_UUID, SOME_DATE);
 
     CreateWsResponse response = executeRequest("foo", "bar", null, null, null);
@@ -349,7 +349,7 @@ public class CreateActionTest {
 
   @Test
   public void request_succeeds_if_description_url_and_avatar_are_specified() {
-    logInAsRoot();
+    logInAsSystemAdministrator();
     mockForSuccessfulInsert(SOME_UUID, SOME_DATE);
 
     CreateWsResponse response = executeRequest("foo", "bar", "moo", "doo", "boo");
@@ -358,7 +358,7 @@ public class CreateActionTest {
 
   @Test
   public void request_succeeds_to_generate_key_from_name_more_then_32_chars_long() {
-    logInAsRoot();
+    logInAsSystemAdministrator();
     mockForSuccessfulInsert(SOME_UUID, SOME_DATE);
 
     String name = STRING_65_CHARS_LONG.substring(0, 33);
@@ -369,7 +369,7 @@ public class CreateActionTest {
 
   @Test
   public void request_generates_key_ignoring_multiple_following_spaces() {
-    logInAsRoot();
+    logInAsSystemAdministrator();
     mockForSuccessfulInsert(SOME_UUID, SOME_DATE);
 
     String name = "ab   cd";
@@ -380,7 +380,7 @@ public class CreateActionTest {
 
   @Test
   public void request_fails_if_description_is_257_chars_long() {
-    logInAsRoot();
+    logInAsSystemAdministrator();
 
     expectedException.expect(IllegalArgumentException.class);
     expectedException.expectMessage("description '" + STRING_257_CHARS_LONG + "' must be at most 256 chars long");
@@ -390,7 +390,7 @@ public class CreateActionTest {
 
   @Test
   public void request_succeeds_if_description_is_256_chars_long() {
-    logInAsRoot();
+    logInAsSystemAdministrator();
     mockForSuccessfulInsert(SOME_UUID, SOME_DATE);
     String description = STRING_257_CHARS_LONG.substring(0, 256);
 
@@ -400,7 +400,7 @@ public class CreateActionTest {
 
   @Test
   public void request_fails_if_url_is_257_chars_long() {
-    logInAsRoot();
+    logInAsSystemAdministrator();
 
     expectedException.expect(IllegalArgumentException.class);
     expectedException.expectMessage("url '" + STRING_257_CHARS_LONG + "' must be at most 256 chars long");
@@ -410,7 +410,7 @@ public class CreateActionTest {
 
   @Test
   public void request_succeeds_if_url_is_256_chars_long() {
-    logInAsRoot();
+    logInAsSystemAdministrator();
     mockForSuccessfulInsert(SOME_UUID, SOME_DATE);
     String url = STRING_257_CHARS_LONG.substring(0, 256);
 
@@ -420,7 +420,7 @@ public class CreateActionTest {
 
   @Test
   public void request_fails_if_avatar_is_257_chars_long() {
-    logInAsRoot();
+    logInAsSystemAdministrator();
 
     expectedException.expect(IllegalArgumentException.class);
     expectedException.expectMessage("avatar '" + STRING_257_CHARS_LONG + "' must be at most 256 chars long");
@@ -430,7 +430,7 @@ public class CreateActionTest {
 
   @Test
   public void request_succeeds_if_avatar_is_256_chars_long() {
-    logInAsRoot();
+    logInAsSystemAdministrator();
     mockForSuccessfulInsert(SOME_UUID, SOME_DATE);
     String avatar = STRING_257_CHARS_LONG.substring(0, 256);
 
@@ -441,8 +441,8 @@ public class CreateActionTest {
   @Test
   public void request_creates_owners_group_with_all_permissions_for_new_organization_and_add_current_user_to_it() {
     mockForSuccessfulInsert(SOME_UUID, SOME_DATE);
-    UserDto user = dbTester.users().makeRoot(dbTester.users().insertUser());
-    userSession.logIn(user).setRoot();
+    UserDto user = dbTester.users().insertUser();
+    userSession.logIn(user).setSystemAdministrator();
 
     executeRequest("orgFoo");
 
@@ -465,8 +465,8 @@ public class CreateActionTest {
   @Test
   public void request_creates_default_template_for_owner_group_and_anyone() {
     mockForSuccessfulInsert(SOME_UUID, SOME_DATE);
-    UserDto user = dbTester.users().makeRoot(dbTester.users().insertUser());
-    userSession.logIn(user).setRoot();
+    UserDto user = dbTester.users().insertUser();
+    userSession.logIn(user).setSystemAdministrator();
 
     executeRequest("orgFoo");
 
@@ -488,7 +488,7 @@ public class CreateActionTest {
   @Test
   public void request_fails_with_IllegalStateException_if_organization_feature_is_disabled() {
     organizationFeature.setEnabled(false);
-    logInAsRoot();
+    logInAsSystemAdministrator();
 
     expectedException.expect(IllegalStateException.class);
     expectedException.expectMessage("Organization feature is disabled");
@@ -588,7 +588,7 @@ public class CreateActionTest {
     return dto;
   }
 
-  private void logInAsRoot() {
-    userSession.logIn().setRoot();
+  private void logInAsSystemAdministrator() {
+    userSession.logIn().setSystemAdministrator();
   }
 }

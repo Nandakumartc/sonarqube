@@ -49,7 +49,7 @@ public class SettingsActionTest {
   @Test
   public void empty() throws Exception {
     init();
-    userSessionRule.logIn().setRoot();
+    userSessionRule.logIn().setSystemAdministrator();
 
     executeAndVerify("empty.json");
   }
@@ -57,7 +57,7 @@ public class SettingsActionTest {
   @Test
   public void with_pages() throws Exception {
     init(createPages());
-    userSessionRule.logIn().setRoot();
+    userSessionRule.logIn().setSystemAdministrator();
 
     executeAndVerify("with_pages.json");
   }
@@ -66,16 +66,16 @@ public class SettingsActionTest {
   public void with_update_center() throws Exception {
     init();
     settings.setProperty(WebConstants.SONAR_UPDATECENTER_ACTIVATE, true);
-    userSessionRule.logIn().setRoot();
+    userSessionRule.logIn().setSystemAdministrator();
 
     executeAndVerify("with_update_center.json");
   }
 
   @Test
-  public void with_views_and_update_center_but_not_root_administrator() throws Exception {
+  public void with_views_and_update_center_but_not_system_administrator() throws Exception {
     init(createPages());
     settings.setProperty(WebConstants.SONAR_UPDATECENTER_ACTIVATE, true);
-    userSessionRule.logIn().setNonRoot();
+    userSessionRule.logIn().setNonSystemAdministrator();
 
     executeAndVerify("empty.json");
   }

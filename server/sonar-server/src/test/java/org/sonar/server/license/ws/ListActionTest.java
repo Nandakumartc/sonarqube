@@ -79,7 +79,7 @@ public class ListActionTest {
 
   @Test
   public void return_licenses() throws Exception {
-    logInAsRoot();
+    logInAsSystemAdministrator();
     addServerIdSettings("12345");
     String data = createBase64License("SonarSource", "governance", "12345", "2099-01-01", "PRODUCTION", ImmutableMap.of("other", "value"));
     addLicenseSetting("sonar.governance.license.secured", "Governance", data);
@@ -105,7 +105,7 @@ public class ListActionTest {
 
   @Test
   public void return_licenses_even_if_no_value_set_in_database() throws Exception {
-    logInAsRoot();
+    logInAsSystemAdministrator();
     addServerIdSettings("12345");
     definitions.addComponent(PropertyDefinition.builder("sonar.governance.license.secured").type(LICENSE).build());
 
@@ -129,7 +129,7 @@ public class ListActionTest {
 
   @Test
   public void return_information_when_no_licence_set() throws Exception {
-    logInAsRoot();
+    logInAsSystemAdministrator();
     addServerIdSettings(SERVER_ID_SAMPLE);
     addLicenseSetting(LICENSE_KEY_SAMPLE, null, toBase64(""));
 
@@ -154,7 +154,7 @@ public class ListActionTest {
 
   @Test
   public void return_license_with_bad_product() throws Exception {
-    logInAsRoot();
+    logInAsSystemAdministrator();
     addServerIdSettings(SERVER_ID_SAMPLE);
     addLicenseSetting(LICENSE_KEY_SAMPLE, LICENSE_NAME_SAMPLE,
       createBase64License(ORGANIZATION_SAMPLE, "Other", SERVER_ID_SAMPLE, EXPIRATION_SAMPLE, TYPE_SAMPLE, Collections.emptyMap()));
@@ -171,7 +171,7 @@ public class ListActionTest {
 
   @Test
   public void return_license_with_bad_server_id() throws Exception {
-    logInAsRoot();
+    logInAsSystemAdministrator();
     addServerIdSettings(SERVER_ID_SAMPLE);
     addLicenseSetting(LICENSE_KEY_SAMPLE, LICENSE_NAME_SAMPLE,
       createBase64License(ORGANIZATION_SAMPLE, PRODUCT_SAMPLE, "Other", EXPIRATION_SAMPLE, TYPE_SAMPLE, Collections.emptyMap()));
@@ -188,7 +188,7 @@ public class ListActionTest {
 
   @Test
   public void return_bad_server_id_when_server_has_no_server_id() throws Exception {
-    logInAsRoot();
+    logInAsSystemAdministrator();
     addLicenseSetting(LICENSE_KEY_SAMPLE, LICENSE_NAME_SAMPLE,
       createBase64License(ORGANIZATION_SAMPLE, PRODUCT_SAMPLE, SERVER_ID_SAMPLE, EXPIRATION_SAMPLE, TYPE_SAMPLE, Collections.emptyMap()));
 
@@ -201,7 +201,7 @@ public class ListActionTest {
 
   @Test
   public void does_not_return_invalid_server_id_when_all_servers_accepted_and_no_server_id_setting() throws Exception {
-    logInAsRoot();
+    logInAsSystemAdministrator();
     addLicenseSetting(LICENSE_KEY_SAMPLE, LICENSE_NAME_SAMPLE,
       createBase64License(ORGANIZATION_SAMPLE, PRODUCT_SAMPLE, "*", EXPIRATION_SAMPLE, TYPE_SAMPLE, Collections.emptyMap()));
 
@@ -215,7 +215,7 @@ public class ListActionTest {
 
   @Test
   public void return_license_when_all_servers_are_accepted() throws Exception {
-    logInAsRoot();
+    logInAsSystemAdministrator();
     addServerIdSettings(SERVER_ID_SAMPLE);
     addLicenseSetting(LICENSE_KEY_SAMPLE, LICENSE_NAME_SAMPLE,
       createBase64License(ORGANIZATION_SAMPLE, PRODUCT_SAMPLE, "*", EXPIRATION_SAMPLE, TYPE_SAMPLE, Collections.emptyMap()));
@@ -230,7 +230,7 @@ public class ListActionTest {
 
   @Test
   public void return_license_when_expired() throws Exception {
-    logInAsRoot();
+    logInAsSystemAdministrator();
     addServerIdSettings(SERVER_ID_SAMPLE);
     addLicenseSetting(LICENSE_KEY_SAMPLE, LICENSE_NAME_SAMPLE,
       createBase64License(ORGANIZATION_SAMPLE, PRODUCT_SAMPLE, SERVER_ID_SAMPLE, "2010-01-01", TYPE_SAMPLE, Collections.emptyMap()));
@@ -247,7 +247,7 @@ public class ListActionTest {
 
   @Test
   public void none_license_type_settings_are_not_returned() throws Exception {
-    logInAsRoot();
+    logInAsSystemAdministrator();
     definitions.addComponent(PropertyDefinition.builder("foo").build());
     propertyDb.insertProperties(newGlobalPropertyDto().setKey("foo").setValue("value"));
 
@@ -257,8 +257,8 @@ public class ListActionTest {
   }
 
   @Test
-  public void throw_ForbiddenException_if_not_root() throws Exception {
-    userSession.logIn().setNonRoot();
+  public void throw_ForbiddenException_if_not_system_administrator() throws Exception {
+    userSession.logIn().setNonSystemAdministrator();
 
     expectedException.expect(ForbiddenException.class);
 
@@ -285,8 +285,8 @@ public class ListActionTest {
     }
   }
 
-  private void logInAsRoot() {
-    userSession.logIn().setRoot();
+  private void logInAsSystemAdministrator() {
+    userSession.logIn().setSystemAdministrator();
   }
 
   private void addLicenseSetting(String key, @Nullable String name, String value) {

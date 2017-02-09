@@ -130,7 +130,7 @@ public class TaskAction implements CeWsAction {
       }
 
     } else {
-      userSession.checkIsRoot();
+      userSession.checkIsSystemAdministrator();
     }
   }
 

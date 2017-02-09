@@ -186,7 +186,7 @@ public class ActivityAction implements CeWsAction {
     userSession.checkLoggedIn();
 
     if (request.getComponentId() == null) {
-      userSession.checkIsRoot();
+      userSession.checkIsSystemAdministrator();
     } else {
       userSession.checkComponentUuidPermission(UserRole.ADMIN, request.getComponentId());
     }

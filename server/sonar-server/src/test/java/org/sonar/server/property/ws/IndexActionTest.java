@@ -297,7 +297,7 @@ public class IndexActionTest {
 
   @Test
   public void return_secured_and_license_settings_when_system_admin() throws Exception {
-    logInAsRoot();
+    logInAsSystemAdministrator();
     definitions.addComponents(asList(
       PropertyDefinition.builder("foo").build(),
       PropertyDefinition.builder("secret.secured").build(),
@@ -329,7 +329,7 @@ public class IndexActionTest {
 
   @Test
   public void return_secured_and_license_settings_in_property_set_when_system_admin() throws Exception {
-    logInAsRoot();
+    logInAsSystemAdministrator();
     definitions.addComponent(PropertyDefinition
       .builder("foo")
       .type(PropertyType.PROPERTY_SET)
@@ -346,7 +346,7 @@ public class IndexActionTest {
 
   @Test
   public void return_all_settings_when_no_component_and_no_key() throws Exception {
-    logInAsRoot();
+    logInAsSystemAdministrator();
     definitions.addComponents(asList(
       PropertyDefinition.builder("foo").build(),
       PropertyDefinition.builder("secret.secured").build(),
@@ -472,8 +472,8 @@ public class IndexActionTest {
     userSession.logIn().addProjectUuidPermissions(USER, project.uuid());
   }
 
-  private void logInAsRoot() {
-    userSession.logIn().setRoot();
+  private void logInAsSystemAdministrator() {
+    userSession.logIn().setSystemAdministrator();
   }
 
   private void logInAsProjectAdmin() {

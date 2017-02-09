@@ -268,7 +268,7 @@ public class SetAction implements SettingsWsAction {
     if (component.isPresent()) {
       userSession.checkComponentPermission(UserRole.ADMIN, component.get());
     } else {
-      userSession.checkIsRoot();
+      userSession.checkIsSystemAdministrator();
     }
   }
 

@@ -105,7 +105,7 @@ public class ActivityStatusAction implements CeWsAction {
     if (component.isPresent()) {
       userSession.checkComponentPermission(UserRole.ADMIN, component.get());
     } else {
-      userSession.checkIsRoot();
+      userSession.checkIsSystemAdministrator();
     }
   }
 

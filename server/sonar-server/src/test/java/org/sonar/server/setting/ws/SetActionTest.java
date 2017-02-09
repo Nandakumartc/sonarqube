@@ -25,6 +25,7 @@ import com.google.gson.Gson;
 import java.net.HttpURLConnection;
 import java.util.List;
 import javax.annotation.Nullable;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -72,7 +73,7 @@ public class SetActionTest {
   @Rule
   public ExpectedException expectedException = ExpectedException.none();
   @Rule
-  public UserSessionRule userSession = UserSessionRule.standalone().logIn().setRoot();
+  public UserSessionRule userSession = UserSessionRule.standalone().logIn();
 
   @Rule
   public DbTester db = DbTester.create(System2.INSTANCE);
@@ -89,6 +90,12 @@ public class SetActionTest {
   private SetAction underTest = new SetAction(definitions, dbClient, componentFinder, userSession, settingsUpdater, settingsChangeNotifier, validations);
 
   private WsActionTester ws = new WsActionTester(underTest);
+
+  @Before
+  public void setUp() {
+    // by default test doesn't care about permissions
+    userSession.logIn().setSystemAdministrator();
+  }
 
   @Test
   public void empty_204_response() {
@@ -124,6 +131,7 @@ public class SetActionTest {
   public void persist_new_project_setting() {
     propertyDb.insertProperty(newGlobalPropertyDto("my.key", "my global value"));
     ComponentDto project = db.components().insertProject();
+    logInAsProjectAdministrator(project);
 
     callForProjectSettingByKey("my.key", "my project value", project.key());
 
@@ -135,7 +143,7 @@ public class SetActionTest {
   @Test
   public void persist_project_property_with_project_admin_permission() {
     ComponentDto project = db.components().insertProject();
-    userSession.logIn().addProjectUuidPermissions(UserRole.ADMIN, project.uuid());
+    logInAsProjectAdministrator(project);
 
     callForProjectSettingByKey("my.key", "my value", project.key());
 
@@ -148,6 +156,7 @@ public class SetActionTest {
     ComponentDto project = db.components().insertProject();
     propertyDb.insertProperty(newComponentPropertyDto("my.key", "my project value", project));
     assertComponentSetting("my.key", "my project value", project.getId());
+    logInAsProjectAdministrator(project);
 
     callForProjectSettingByKey("my.key", "my new project value", project.key());
 
@@ -283,6 +292,7 @@ public class SetActionTest {
       newComponentPropertyDto("my.key", "1", project),
       newComponentPropertyDto("my.key.1.firstField", "componentFirstValue", project),
       newComponentPropertyDto("my.key.1.firstField", "componentSecondValue", project));
+    logInAsProjectAdministrator(project);
 
     callForComponentPropertySet("my.key", newArrayList(
       GSON.toJson(ImmutableMap.of("firstField", "firstValue", "secondField", "secondValue")),
@@ -422,8 +432,8 @@ public class SetActionTest {
   }
 
   @Test
-  public void throw_ForbiddenException_if_not_root() {
-    userSession.logIn();
+  public void throw_ForbiddenException_if_not_system_administrator() {
+    userSession.logIn().setNonSystemAdministrator();
 
     expectedException.expect(ForbiddenException.class);
     expectedException.expectMessage("Insufficient privileges");
@@ -543,6 +553,7 @@ public class SetActionTest {
     i18n.put("qualifier." + Qualifiers.VIEW, "View");
     expectedException.expect(BadRequestException.class);
     expectedException.expectMessage("Setting 'my.key' cannot be set on a View");
+    logInAsProjectAdministrator(view);
 
     callForProjectSettingByKey("my.key", "My Value", view.key());
   }
@@ -787,6 +798,7 @@ public class SetActionTest {
       .build());
     i18n.put("qualifier." + Qualifiers.PROJECT, "Project");
     ComponentDto project = db.components().insertProject();
+    logInAsProjectAdministrator(project);
 
     expectedException.expect(BadRequestException.class);
     expectedException.expectMessage("Setting 'my.key' cannot be set on a Project");
@@ -872,8 +884,8 @@ public class SetActionTest {
   }
 
   private static class FakeSettingsNotifier extends SettingsChangeNotifier {
-    private final DbClient dbClient;
 
+    private final DbClient dbClient;
     private boolean wasCalled = false;
 
     private FakeSettingsNotifier(DbClient dbClient) {
@@ -887,5 +899,9 @@ public class SetActionTest {
 
       assertThat(property.getValue()).isEqualTo(value);
     }
+
+  }
+  private void logInAsProjectAdministrator(ComponentDto project) {
+    userSession.logIn().addProjectUuidPermissions(UserRole.ADMIN, project.uuid());
   }
 }

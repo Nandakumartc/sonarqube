@@ -76,7 +76,7 @@ public class DeselectActionTest {
 
   @Test
   public void deselect_by_id() throws Exception {
-    userSession.logIn().setRoot();
+    logInAsRoot();
 
     ComponentDto anotherProject = db.components().insertProject();
     String gateId = String.valueOf(gate.getId());
@@ -91,7 +91,7 @@ public class DeselectActionTest {
 
   @Test
   public void deselect_by_uuid() throws Exception {
-    userSession.logIn().setRoot();
+    logInAsRoot();
 
     String gateId = String.valueOf(gate.getId());
     associateProjectToQualityGate(project.getId(), gateId);
@@ -103,7 +103,7 @@ public class DeselectActionTest {
 
   @Test
   public void deselect_by_key() throws Exception {
-    userSession.logIn().setRoot();
+    logInAsRoot();
 
     String gateId = String.valueOf(gate.getId());
     associateProjectToQualityGate(project.getId(), gateId);
@@ -223,5 +223,9 @@ public class DeselectActionTest {
 
   private void assertSelected(String qGateId, long projectId) {
     assertThat(dbClient.propertiesDao().selectProjectProperty(projectId, SONAR_QUALITYGATE_PROPERTY).getValue()).isEqualTo(qGateId);
+  }
+
+  private void logInAsRoot() {
+    userSession.logIn().setRoot();
   }
 }

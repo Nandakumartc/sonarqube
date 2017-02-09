@@ -61,7 +61,7 @@ public class EncryptActionTest {
 
   @Before
   public void setUpSecretKey() throws Exception {
-    logInAsRoot();
+    logInAsSystemAdministrator();
 
     File secretKeyFile = folder.newFile();
     FileUtils.writeStringToFile(secretKeyFile, "fCVFf/JHRi8Qwu5KLNva7g==");
@@ -71,7 +71,7 @@ public class EncryptActionTest {
 
   @Test
   public void json_example() {
-    logInAsRoot();
+    logInAsSystemAdministrator();
 
     String result = ws.newRequest().setParam("value", "my value").execute().getInput();
 
@@ -80,7 +80,7 @@ public class EncryptActionTest {
 
   @Test
   public void encrypt() {
-    logInAsRoot();
+    logInAsSystemAdministrator();
 
     EncryptWsResponse result = call("my value!");
 
@@ -99,8 +99,8 @@ public class EncryptActionTest {
   }
 
   @Test
-  public void throw_ForbiddenException_if_not_root() throws Exception {
-    userSession.logIn().setNonRoot();
+  public void throw_ForbiddenException_if_not_system_administrator() throws Exception {
+    userSession.logIn().setNonSystemAdministrator();
 
     expectedException.expect(ForbiddenException.class);
     expectedException.expectMessage("Insufficient privileges");
@@ -110,7 +110,7 @@ public class EncryptActionTest {
 
   @Test
   public void fail_if_value_is_not_provided() {
-    logInAsRoot();
+    logInAsSystemAdministrator();
 
     expectedException.expect(IllegalArgumentException.class);
 
@@ -119,7 +119,7 @@ public class EncryptActionTest {
 
   @Test
   public void fail_if_value_is_empty() {
-    logInAsRoot();
+    logInAsSystemAdministrator();
 
     expectedException.expect(BadRequestException.class);
     expectedException.expectMessage("Parameter 'value' must not be empty");
@@ -129,7 +129,7 @@ public class EncryptActionTest {
 
   @Test
   public void fail_if_no_secret_key_available() {
-    logInAsRoot();
+    logInAsSystemAdministrator();
 
     encryption.setPathToSecretKey("unknown/path/to/secret/key");
 
@@ -155,7 +155,7 @@ public class EncryptActionTest {
     }
   }
 
-  private void logInAsRoot() {
-    userSession.logIn().setRoot();
+  private void logInAsSystemAdministrator() {
+    userSession.logIn().setSystemAdministrator();
   }
 }
