@@ -110,6 +110,12 @@ public class ThreadLocalUserSession implements UserSession {
   }
 
   @Override
+  public UserSession checkIsSystemAdministrator() {
+    get().checkIsSystemAdministrator();
+    return this;
+  }
+
+  @Override
   public boolean hasComponentPermission(String permission, ComponentDto component) {
     return get().hasComponentPermission(permission, component);
   }

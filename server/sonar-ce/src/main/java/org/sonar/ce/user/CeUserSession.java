@@ -94,6 +94,11 @@ public class CeUserSession implements UserSession {
   }
 
   @Override
+  public UserSession checkIsSystemAdministrator() {
+    throw notImplemented();
+  }
+
+  @Override
   public boolean hasComponentPermission(String permission, ComponentDto component) {
     throw notImplemented();
   }

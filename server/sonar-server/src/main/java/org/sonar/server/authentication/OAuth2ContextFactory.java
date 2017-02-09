@@ -26,11 +26,10 @@ import org.sonar.api.platform.Server;
 import org.sonar.api.server.authentication.OAuth2IdentityProvider;
 import org.sonar.api.server.authentication.UserIdentity;
 import org.sonar.api.utils.MessageException;
-import org.sonar.db.DbClient;
 import org.sonar.db.user.UserDto;
 import org.sonar.server.authentication.event.AuthenticationEvent;
-import org.sonar.server.user.ServerUserSession;
 import org.sonar.server.user.ThreadLocalUserSession;
+import org.sonar.server.user.UserSessionFactory;
 
 import static java.lang.String.format;
 import static org.sonar.api.CoreProperties.SERVER_BASE_URL;
@@ -38,16 +37,16 @@ import static org.sonar.server.authentication.OAuth2CallbackFilter.CALLBACK_PATH
 
 public class OAuth2ContextFactory {
 
-  private final DbClient dbClient;
   private final ThreadLocalUserSession threadLocalUserSession;
   private final UserIdentityAuthenticator userIdentityAuthenticator;
   private final Server server;
   private final OAuthCsrfVerifier csrfVerifier;
   private final JwtHttpHandler jwtHttpHandler;
+  private final UserSessionFactory userSessionFactory;
 
-  public OAuth2ContextFactory(DbClient dbClient, ThreadLocalUserSession threadLocalUserSession, UserIdentityAuthenticator userIdentityAuthenticator, Server server,
-    OAuthCsrfVerifier csrfVerifier, JwtHttpHandler jwtHttpHandler) {
-    this.dbClient = dbClient;
+  public OAuth2ContextFactory(ThreadLocalUserSession threadLocalUserSession, UserIdentityAuthenticator userIdentityAuthenticator, Server server,
+    OAuthCsrfVerifier csrfVerifier, JwtHttpHandler jwtHttpHandler, UserSessionFactory userSessionFactory) {
+    this.userSessionFactory = userSessionFactory;
     this.threadLocalUserSession = threadLocalUserSession;
     this.userIdentityAuthenticator = userIdentityAuthenticator;
     this.server = server;
@@ -126,7 +125,7 @@ public class OAuth2ContextFactory {
     public void authenticate(UserIdentity userIdentity) {
       UserDto userDto = userIdentityAuthenticator.authenticate(userIdentity, identityProvider, AuthenticationEvent.Source.oauth2(identityProvider));
       jwtHttpHandler.generateToken(userDto, request, response);
-      threadLocalUserSession.set(ServerUserSession.createForUser(dbClient, userDto));
+      threadLocalUserSession.set(userSessionFactory.create(userDto));
     }
   }
 }

@@ -305,6 +305,12 @@ public class UserSessionRule implements TestRule, UserSession {
   }
 
   @Override
+  public UserSession checkIsSystemAdministrator() {
+    currentUserSession.checkIsSystemAdministrator();
+    return this;
+  }
+
+  @Override
   public UserSession checkOrganizationPermission(String organizationUuid, String permission) {
     currentUserSession.checkOrganizationPermission(organizationUuid, permission);
     return this;
