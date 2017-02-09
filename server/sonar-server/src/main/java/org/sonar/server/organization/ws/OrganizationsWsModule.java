@@ -30,6 +30,7 @@ public class OrganizationsWsModule extends Module {
       OrganizationsWsSupport.class,
       // actions
       CreateAction.class,
+      EnableFeatureAction.class,
       SearchAction.class,
       UpdateAction.class,
       DeleteAction.class,

@@ -85,7 +85,7 @@ public class CreateActionTest {
   private Settings settings = new MapSettings()
     .setProperty(ORGANIZATIONS_ANYONE_CAN_CREATE, false);
   private UuidFactory uuidFactory = mock(UuidFactory.class);
-  private CreateAction underTest = new CreateAction(settings, userSession, dbClient, uuidFactory, new OrganizationsWsSupport(), new AlwaysIncreasingSystem2());
+  private CreateAction underTest = new CreateAction(settings, userSession, dbClient, uuidFactory, new OrganizationsWsSupport(dbClient), new AlwaysIncreasingSystem2());
   private WsActionTester wsTester = new WsActionTester(underTest);
 
   @Test
