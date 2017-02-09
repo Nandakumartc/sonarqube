@@ -26,7 +26,6 @@ import org.junit.rules.ExpectedException;
 import org.sonar.api.server.ws.WebService;
 import org.sonar.db.DbTester;
 import org.sonar.db.user.UserDto;
-import org.sonar.server.exceptions.BadRequestException;
 import org.sonar.server.exceptions.ForbiddenException;
 import org.sonar.server.exceptions.UnauthorizedException;
 import org.sonar.server.organization.DefaultOrganizationProvider;
@@ -91,15 +90,17 @@ public class EnableFeatureActionTest {
   }
 
   @Test
-  public void throw_BadRequestException_if_feature_is_already_enabled() {
+  public void do_nothing_if_feature_is_already_enabled() {
     logInAsSystemAdministrator("foo");
 
     call();
+    verifyFeatureEnabled(true);
 
-    expectedException.expect(BadRequestException.class);
-    expectedException.expectMessage("Organizations are already enabled");
-
+    // the test could be improved to verify that
+    // the caller user is not flagged as root
+    // if he was not already root
     call();
+    verifyFeatureEnabled(true);
   }
 
   @Test
