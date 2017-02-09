@@ -81,7 +81,7 @@ public abstract class AbstractMockUserSession<T extends AbstractMockUserSession>
   }
 
   @Override
-  protected final boolean isSystemAdministrator() {
-    return isSystemAdministrator();
+  public boolean isSystemAdministrator() {
+    return systemAdministrator;
   }
 }

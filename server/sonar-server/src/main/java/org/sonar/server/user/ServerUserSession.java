@@ -67,7 +67,7 @@ public class ServerUserSession extends AbstractUserSession {
     this.userDto = userDto;
   }
 
-    private List<GroupDto> loadGroups() {
+  private List<GroupDto> loadGroups() {
     if (this.userDto == null) {
       return Collections.emptyList();
     }
@@ -170,7 +170,7 @@ public class ServerUserSession extends AbstractUserSession {
   }
 
   @Override
-  protected boolean isSystemAdministrator() {
+  public boolean isSystemAdministrator() {
     return isSystemAdministratorSupplier.get();
   }
 

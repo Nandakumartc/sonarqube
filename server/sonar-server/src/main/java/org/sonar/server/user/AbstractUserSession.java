@@ -107,6 +107,4 @@ public abstract class AbstractUserSession implements UserSession {
     }
     return this;
   }
-
-  protected abstract boolean isSystemAdministrator();
 }

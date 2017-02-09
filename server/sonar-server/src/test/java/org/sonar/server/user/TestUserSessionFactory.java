@@ -106,7 +106,7 @@ public class TestUserSessionFactory implements UserSessionFactory {
     }
 
     @Override
-    protected boolean isSystemAdministrator() {
+    public boolean isSystemAdministrator() {
       throw notImplemented();
     }
 

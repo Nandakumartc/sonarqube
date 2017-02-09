@@ -94,6 +94,11 @@ public class CeUserSession implements UserSession {
   }
 
   @Override
+  public boolean isSystemAdministrator() {
+    throw notImplemented();
+  }
+
+  @Override
   public UserSession checkIsSystemAdministrator() {
     throw notImplemented();
   }

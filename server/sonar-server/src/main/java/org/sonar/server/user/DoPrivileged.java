@@ -113,7 +113,7 @@ public final class DoPrivileged {
       }
 
       @Override
-      protected boolean isSystemAdministrator() {
+      public boolean isSystemAdministrator() {
         return true;
       }
     }

@@ -130,15 +130,20 @@ public interface UserSession {
   UserSession checkComponentUuidPermission(String permission, String componentUuid);
 
   /**
-   * Ensures that user can administrate system otherwise throws {@link org.sonar.server.exceptions.ForbiddenException}.
-   * This is needed for example for the services that are cross-organizations (update center,
-   * system info, management of users, ...).
+   * Whether user can administrate system, for example to use cross-organizations services
+   * like update center, system info or management of users.
    *
    * Returns {@code true} if:
    * <ul>
    *   <li>{@link #isRoot()} is {@code true}</li>
-   *   <li>organization feature is disabled and user is administrator of the single default organization</li>
+   *   <li>organization feature is disabled and user is administrator of the (single) default organization</li>
    * </ul>
+   */
+  boolean isSystemAdministrator();
+
+  /**
+   * Ensures that {@link #isSystemAdministrator()} is {@code true},
+   * otherwise throws {@link org.sonar.server.exceptions.ForbiddenException}.
    */
   UserSession checkIsSystemAdministrator();
 

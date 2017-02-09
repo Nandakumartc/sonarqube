@@ -230,60 +230,51 @@ public class ServerUserSessionTest {
   }
 
   @Test
-  public void checkIsSystemAdministrator_succeeds_if_org_feature_is_enabled_and_user_is_root() {
+  public void isSystemAdministrator_returns_true_if_org_feature_is_enabled_and_user_is_root() {
     organizationFeature.setEnabled(true);
     userDto = db.users().makeRoot(userDto);
     UserSession session = newUserSession(userDto);
 
-    session.checkIsSystemAdministrator();
+    assertThat(session.isSystemAdministrator()).isTrue();
   }
 
   @Test
-  public void checkIsSystemAdministrator_throws_ForbiddenException_if_org_feature_is_enabled_and_user_is_not_root() {
+  public void isSystemAdministrator_returns_false_if_org_feature_is_enabled_and_user_is_not_root() {
     organizationFeature.setEnabled(true);
     userDto = db.users().makeNotRoot(userDto);
     UserSession session = newUserSession(userDto);
 
-    expectedException.expect(ForbiddenException.class);
-    expectedException.expectMessage("Insufficient privileges");
-
-    session.checkIsSystemAdministrator();
+    assertThat(session.isSystemAdministrator()).isFalse();
   }
 
   @Test
-  public void checkIsSystemAdministrator_throws_ForbiddenException_if_org_feature_is_enabled_and_user_is_administrator_of_default_organization() {
+  public void isSystemAdministrator_returns_false_if_org_feature_is_enabled_and_user_is_administrator_of_default_organization() {
     organizationFeature.setEnabled(true);
     userDto = db.users().makeNotRoot(userDto);
     db.users().insertPermissionOnUser(db.getDefaultOrganization(), userDto, SYSTEM_ADMIN);
     UserSession session = newUserSession(userDto);
 
-    expectedException.expect(ForbiddenException.class);
-    expectedException.expectMessage("Insufficient privileges");
-
-    session.checkIsSystemAdministrator();
+    assertThat(session.isSystemAdministrator()).isFalse();
   }
 
   @Test
-  public void checkIsSystemAdministrator_succeeds_if_org_feature_is_disabled_and_user_is_administrator_of_default_organization() {
+  public void isSystemAdministrator_returns_true_if_org_feature_is_disabled_and_user_is_administrator_of_default_organization() {
     organizationFeature.setEnabled(false);
     userDto = db.users().makeNotRoot(userDto);
     db.users().insertPermissionOnUser(db.getDefaultOrganization(), userDto, SYSTEM_ADMIN);
     UserSession session = newUserSession(userDto);
 
-    session.checkIsSystemAdministrator();
+    assertThat(session.isSystemAdministrator()).isTrue();
   }
 
   @Test
-  public void checkIsSystemAdministrator_throws_ForbiddenException_if_org_feature_is_disabled_and_user_is_not_administrator_of_default_organization() {
+  public void isSystemAdministrator_returns_false_if_org_feature_is_disabled_and_user_is_not_administrator_of_default_organization() {
     organizationFeature.setEnabled(true);
     userDto = db.users().makeNotRoot(userDto);
     db.users().insertPermissionOnUser(db.getDefaultOrganization(), userDto, PROVISIONING);
     UserSession session = newUserSession(userDto);
 
-    expectedException.expect(ForbiddenException.class);
-    expectedException.expectMessage("Insufficient privileges");
-
-    session.checkIsSystemAdministrator();
+    assertThat(session.isSystemAdministrator()).isFalse();
   }
 
   @Test
@@ -299,6 +290,27 @@ public class ServerUserSessionTest {
     db.commit();
 
     // should fail but succeeds because flag is kept in cache
+    session.checkIsSystemAdministrator();
+  }
+
+  @Test
+  public void checkIsSystemAdministrator_succeeds_if_system_administrator() {
+    organizationFeature.setEnabled(true);
+    userDto = db.users().makeRoot(userDto);
+    UserSession session = newUserSession(userDto);
+
+    session.checkIsSystemAdministrator();
+  }
+
+  @Test
+  public void checkIsSystemAdministrator_throws_ForbiddenException_if_not_system_administrator() {
+    organizationFeature.setEnabled(true);
+    userDto = db.users().makeNotRoot(userDto);
+    UserSession session = newUserSession(userDto);
+
+    expectedException.expect(ForbiddenException.class);
+    expectedException.expectMessage("Insufficient privileges");
+
     session.checkIsSystemAdministrator();
   }
 

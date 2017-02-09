@@ -110,6 +110,11 @@ public class ThreadLocalUserSession implements UserSession {
   }
 
   @Override
+  public boolean isSystemAdministrator() {
+    return get().isSystemAdministrator();
+  }
+
+  @Override
   public UserSession checkIsSystemAdministrator() {
     get().checkIsSystemAdministrator();
     return this;
