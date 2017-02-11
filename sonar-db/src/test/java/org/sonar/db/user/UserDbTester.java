@@ -170,7 +170,7 @@ public class UserDbTester {
   }
 
   @CheckForNull
-  public GroupDto selectGroupById(long groupId) {
+  public GroupDto selectGroupById(int groupId) {
     return db.getDbClient().groupDao().selectById(db.getSession(), groupId);
   }
 
@@ -199,7 +199,7 @@ public class UserDbTester {
     db.commit();
   }
 
-  public List<Long> selectGroupIdsOfUser(UserDto user) {
+  public List<Integer> selectGroupIdsOfUser(UserDto user) {
     return db.getDbClient().groupMembershipDao().selectGroupIdsByUserId(db.getSession(), user.getId());
   }
 

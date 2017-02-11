@@ -44,11 +44,11 @@ public class GroupWsRef {
 
   private static final int NULL_ID = -1;
 
-  private final long id;
+  private final int id;
   private final String organizationKey;
   private final String name;
 
-  private GroupWsRef(long id, @Nullable String organizationKey, @Nullable String name) {
+  private GroupWsRef(int id, @Nullable String organizationKey, @Nullable String name) {
     this.id = id;
     this.organizationKey = organizationKey;
     this.name = name;
@@ -67,7 +67,7 @@ public class GroupWsRef {
    * @return the group id
    * @throws IllegalStateException if {@link #getId()} is {@code false}
    */
-  public long getId() {
+  public int getId() {
     checkState(hasId(), "Id is not present. Please see hasId().");
     return id;
   }
@@ -95,7 +95,7 @@ public class GroupWsRef {
    * Creates a reference to a group by its id. Virtual groups "Anyone" can't be returned
    * as they can't be referenced by an id.
    */
-  static GroupWsRef fromId(long id) {
+  static GroupWsRef fromId(int id) {
     checkArgument(id > -1, "Group id must be positive: %s", id);
     return new GroupWsRef(id, null, null);
   }
@@ -111,7 +111,7 @@ public class GroupWsRef {
     return new GroupWsRef(NULL_ID, organizationKey, requireNonNull(name));
   }
 
-  public static GroupWsRef create(@Nullable Long id, @Nullable String organizationKey, @Nullable String name) {
+  public static GroupWsRef create(@Nullable Integer id, @Nullable String organizationKey, @Nullable String name) {
     if (id != null) {
       checkRequest(organizationKey == null && name == null, "Either group id or couple organization/group name must be set");
       return fromId(id);
